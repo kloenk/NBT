@@ -30,23 +30,16 @@ final class NBTEncodingTests: XCTestCase {
     
     func testEncodingStructSimple() throws {
         struct Root: Encodable {
-            var content: Content
-            
-            enum CodingKeys: String, CodingKey {
-                case content = "hello world"
-            }
-            
-            struct Content: Encodable {
-                var name: String
-            }
+            var name: String
         }
         
-        let root = Root(content: Root.Content(name: "Bananrama"))
+        let root = Root(name: "Bananrama")
         
         
-        let encoder = NBTEncoder()
+        let encoder = NBTEncoder("hello world")
         
         let data = try encoder.encode(root)
+        
         
         var expected = Data()
         // Contents of https://raw.github.com/Dav1dde/nbd/master/test/hello_world.nbt
@@ -55,6 +48,30 @@ final class NBTEncodingTests: XCTestCase {
             0x64, 0x08, 0x00, 0x04, 0x6E, 0x61, 0x6D, 0x65, 0x00, 0x09, 0x42, 0x61, 0x6E,
             0x61, 0x6E, 0x72, 0x61, 0x6D, 0x61, 0x00
         ])
+        
+        print("is: \(data.hexStringEncoded())")
+        print("sh: \(expected.hexStringEncoded())")
+        
+        XCTAssertEqual(data, expected)
+    }
+    
+    func testEncodingStructArray() throws {
+        struct Root: Encodable {
+            var test: Content
+            
+            struct Content: Encodable {
+                var u8: [UInt8]
+            }
+        }
+        
+        let root = Root(test: Root.Content(u8: [1, 20, 30, 10]))
+        
+        let encoder = NBTEncoder()
+        
+        let data = try encoder.encode(root)
+        
+        var expected = Data()
+        expected.append(contentsOf: [])
         
         XCTAssertEqual(data, expected)
     }
